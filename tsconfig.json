@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "lib": ["es5", "es6", "dom"],
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+
+    "outDir": "./dist",
+    "rootDir": "./",
+
+    "allowJs": true,
+    "removeComments": true,
+    "strict": true,
+
+    "baseUrl": "src",
+    "paths": {
+      "@controllers/*": ["app/controllers/*"],
+      "@middlewares/*": ["app/middlewares/*"],
+      "@errors/*": ["app/errors/*"],
+      "@utils/*": ["app/utils/*"],
+
+      "@entity/*": ["database/entity/*"],
+      "@schemas/*": ["database/schemas/*"],
+
+      "@mytypes/*": ["types/*"],
+      "@services/*": ["services/*"],
+      "@config/*": ["config/*"],
+      "@/*": ["*"]
+    },
+
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/types"
+    ],
+
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}
