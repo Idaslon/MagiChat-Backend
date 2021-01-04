@@ -5,6 +5,7 @@ module.exports = {
 
   logging: true,
   synchronize: true,
+  ssl: true,
 
   entities: ['src/database/entity/**/*.ts'],
   migrations: ['src/database/migration/**/*.ts'],
