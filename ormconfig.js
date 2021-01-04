@@ -6,6 +6,10 @@ module.exports = {
   logging: true,
   synchronize: true,
 
+  driver: {
+    extra: { ssl: true },
+  },
+
   entities: [
     'src/database/entity/**/*.ts',
     'database/entity/**/*.js' // heroku
