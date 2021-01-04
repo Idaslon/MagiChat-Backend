@@ -1,9 +1,11 @@
+import 'reflect-metadata';
+
 import './bootstrap';
+import './database';
+
 import express, { Express } from 'express';
 
 import routes from './routes';
-
-import './database';
 
 class App {
   server: Express;
