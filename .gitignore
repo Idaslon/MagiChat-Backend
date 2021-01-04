@@ -15,10 +15,12 @@ web-report/
 
 *.log
 
-.env
-dist/
-tmp/
-
 # Ignore test-related files
 **/coverage.data
 **/coverage/
+
+
+# Local data
+.env
+dist/**/*
+**/*.sql

@@ -7,8 +7,10 @@ module.exports = {
   synchronize: true,
 
   entities: [
-    'src/database/entity/**/*.ts',
-    'database/entity/**/*.js' // heroku
+    `${__dirname}/dist/database/entity/**/*{.ts,.js}`,
+    // `${__dirname}/src/database/entity/**/*{.ts,.js}`,
+    // 'src/database/entity/**/*{.ts,.js}',
+    // 'dist/database/entity/**/*{.ts,.js}'
   ],
   migrations: [
     'src/database/migration/**/*.ts',
@@ -18,3 +20,6 @@ module.exports = {
     migrationsDir: 'src/database/migration'
   }
 }
+// `${__dirname}/**/entity/**/*{.ts,.js}`,
+// require('path').join(__dirname, '**/entity/**/*{.ts,.js}')
+
