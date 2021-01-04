@@ -5,10 +5,9 @@ module.exports = {
 
   logging: true,
   synchronize: true,
-  ssl: true,
 
-  entities: ['src/database/entity/**/*.ts'],
-  migrations: ['src/database/migration/**/*.ts'],
+  entities: ['src/database/entity/**/*.ts', 'src/database/entity/**/*.js'],
+  migrations: ['src/database/migration/**/*.ts', 'src/database/migration/**/*.js'],
   cli: {
     migrationsDir: 'src/database/migration'
   }
