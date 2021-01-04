@@ -6,8 +6,14 @@ module.exports = {
   logging: true,
   synchronize: true,
 
-  entities: ['src/database/entity/**/*.ts', 'src/database/entity/**/*.js'],
-  migrations: ['src/database/migration/**/*.ts', 'src/database/migration/**/*.js'],
+  entities: [
+    'src/database/entity/**/*.ts',
+    'database/entity/**/*.js' // heroku
+  ],
+  migrations: [
+    'src/database/migration/**/*.ts',
+    'database/migration/**/*.js' // heroku
+  ],
   cli: {
     migrationsDir: 'src/database/migration'
   }
