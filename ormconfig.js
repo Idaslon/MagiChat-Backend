@@ -8,7 +8,7 @@ module.exports = {
 
   entities: [
     `${__dirname}/dist/database/entity/**/*{.ts,.js}`,
-    // `${__dirname}/src/database/entity/**/*{.ts,.js}`,
+    `${__dirname}/src/database/entity/**/*{.ts,.js}`,
     // 'src/database/entity/**/*{.ts,.js}',
     // 'dist/database/entity/**/*{.ts,.js}'
   ],
