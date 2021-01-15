@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
+import { RequestError } from '@errors/request';
+import { validateTokenAndGetUser } from '@utils/auth';
 import http from 'http';
 import socket from 'socket.io';
+
 import App from './App';
 
 class Socket {
@@ -16,14 +19,17 @@ class Socket {
   }
 
   initClientConnection() {
+    this.socket.removeAllListeners();
+
     console.log(this.socket.sockets.sockets.size);
 
     this.socket.on('connection', (client: socket.Socket) => {
-      console.log('Connected', client.id);
+      this.handleDisconnect(client);
+      this.handleValidateConnection(client);
 
       console.log(this.socket.sockets.sockets.size);
 
-      // this.handleDisconnect(client);
+      // client.disconnect();
     });
 
     // do not know
@@ -33,7 +39,23 @@ class Socket {
   }
 
   handleDisconnect(client: socket.Socket) {
-    client.on('disconnect', () => console.log('Disconnected', client.id));
+    client.on('disconnect', () => {
+      console.log('Disconnected', client.id);
+    });
+  }
+
+  async handleValidateConnection(client: socket.Socket) {
+    try {
+      const query = client.handshake.query as { token?: string };
+
+      const { token } = query;
+      const user = await validateTokenAndGetUser(token);
+
+      console.log('Connected', client.id, user);
+    } catch (e) {
+      const { message } = e as RequestError;
+      console.error('message', message);
+    }
   }
 }
 

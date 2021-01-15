@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { getRepository } from 'typeorm';
 
 import { User } from '@entity/user';
-import { decodeToken } from '@utils/auth';
+import { decodeToken, validateTokenAndGetUser } from '@utils/auth';
+import { RequestError } from '@errors/request';
 
 interface AuthRequest extends Request {
   userId?: number;
@@ -11,29 +12,15 @@ interface AuthRequest extends Request {
 const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(400).json({ error: 'Token not provided' });
+  try {
+    const user = await validateTokenAndGetUser(authHeader);
+
+    req.userId = user.id;
+    return next();
+  } catch (e) {
+    const { message, statusCode } = e as RequestError;
+    return res.status(statusCode).json({ message });
   }
-
-  const [, token] = authHeader.split(' ');
-  const tokenDecoded = await decodeToken(token);
-
-  if (!tokenDecoded) {
-    return res.status(400).json({ error: 'Token Invalid' });
-  }
-
-  const user = await getRepository(User).findOne({
-    where: {
-      id: tokenDecoded.id,
-    },
-  });
-
-  if (!user) {
-    return res.status(400).json({ error: 'User not found' });
-  }
-
-  req.userId = user.id;
-  return next();
 };
 
 export default authMiddleware;
