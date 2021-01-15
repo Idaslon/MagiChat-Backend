@@ -2,7 +2,7 @@
 import { RequestError } from '@errors/request';
 import { validateTokenAndGetUser } from '@utils/auth';
 import http from 'http';
-import socket from 'socket.io';
+import socket, { Socket } from 'socket.io';
 
 import App from './App';
 
@@ -23,19 +23,13 @@ class Socket {
 
     console.log(this.socket.sockets.sockets.size);
 
-    this.socket.on('connection', (client: socket.Socket) => {
+    this.socket.on('connection', async (client: socket.Socket) => {
       this.handleDisconnect(client);
-      this.handleValidateConnection(client);
 
-      console.log(this.socket.sockets.sockets.size);
+      await this.handleValidateConnection(client);
 
-      // client.disconnect();
+      // this.handleTest(client);
     });
-
-    // do not know
-    // this.socket.on('disconnect', () => {
-    //   this.socket.removeAllListeners();
-    // });
   }
 
   handleDisconnect(client: socket.Socket) {
@@ -54,7 +48,13 @@ class Socket {
       console.log('Connected', client.id, user);
     } catch (e) {
       const { message } = e as RequestError;
-      console.error('message', message);
+      console.error('Error:', message);
+
+      client.emit('error-validation', {
+        message,
+      });
+
+      client.disconnect();
     }
   }
 }
