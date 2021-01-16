@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
+import { indexConversations } from '@controllers/ConversationController/a';
 import { RequestError } from '@errors/request';
 import { validateTokenAndGetUser } from '@utils/auth';
 import http from 'http';
-import socket, { Socket } from 'socket.io';
+import socket from 'socket.io';
 
 import App from './App';
 
@@ -11,7 +12,11 @@ class Socket {
 
   socket: socket.Server;
 
+  clients: { [key: string]: { userId: number } };
+
   constructor() {
+    this.clients = {};
+
     this.server = http.createServer(App);
     this.socket = socket(this.server);
 
@@ -27,8 +32,9 @@ class Socket {
       this.handleDisconnect(client);
 
       await this.handleValidateConnection(client);
+      await this.loadConversations(client);
 
-      // this.handleTest(client);
+      // client.emit('test', { ok: true });
     });
   }
 
@@ -45,6 +51,11 @@ class Socket {
       const { token } = query;
       const user = await validateTokenAndGetUser(token);
 
+      // [to-do] need to check?
+      this.clients[client.id] = {
+        userId: user.id,
+      };
+
       console.log('Connected', client.id, user);
     } catch (e) {
       const { message } = e as RequestError;
@@ -56,6 +67,17 @@ class Socket {
 
       client.disconnect();
     }
+  }
+
+  // other file
+
+  async loadConversations(client: socket.Socket) {
+    const { userId } = this.clients[client.id];
+    console.log('akki');
+
+    const conversations = await indexConversations({ userId });
+
+    client.emit('load-conversations', conversations);
   }
 }
 
