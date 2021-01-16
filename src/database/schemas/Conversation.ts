@@ -4,7 +4,7 @@ import { MessageInterface } from './Message';
 export interface ConversationInterface {
   userId: number;
   toUserId: number;
-  messages: string[] | MessageInterface[];
+  messages: MessageInterface[] | string[];
 }
 
 export type ConversationDocument = Document & ConversationInterface;

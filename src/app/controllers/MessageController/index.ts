@@ -6,6 +6,8 @@ import { RequestError } from '@errors/request';
 
 import Conversation from '@schemas/Conversation';
 import Message from '@schemas/Message';
+import { assertUserExists } from '@controllers/UserController/assertions';
+import { createMessage, indexMessages } from './functions';
 
 type Index = {
   conversationId: string;
@@ -24,47 +26,36 @@ class MessageController {
     const { conversationId } = req.params;
 
     try {
-      const conversation = await assertConversationExists({ _id: conversationId });
-      assertUserOnConversation(conversation, userId);
+      const messages = await indexMessages({
+        userId,
+        conversationId,
+      });
+
+      return res.json(messages);
     } catch (e) {
       const { message, statusCode } = e as RequestError;
       return res.status(statusCode).json({ message });
     }
-
-    const conversationMessages = await Conversation.findById(conversationId).select('_id toUserId').populate({
-      path: 'messages',
-      select: '_id text date',
-    });
-
-    return res.json(conversationMessages?.messages);
   }
 
   async create(req: CreateRequest, res: Response) {
+    const userId = req.userId as number;
+
     const { conversationId } = req.params;
     const { text } = req.body;
 
     try {
-      await assertConversationExists({ _id: conversationId });
+      const message = await createMessage({
+        text,
+        userId,
+        conversationId,
+      });
+
+      return res.json(message);
     } catch (e) {
       const { message, statusCode } = e as RequestError;
       return res.status(statusCode).json({ message });
     }
-
-    const message = await Message.create({
-      text,
-      date: new Date(),
-    });
-
-    await Conversation.updateOne(
-      {
-        _id: conversationId,
-      },
-      {
-        $push: { messages: message._id },
-      }
-    );
-
-    return res.json(message);
   }
 }
 

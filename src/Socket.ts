@@ -1,11 +1,20 @@
 /* eslint-disable no-console */
-import { indexConversations } from '@controllers/ConversationController/a';
+import { indexConversations, showConversation } from '@controllers/ConversationController/functions';
+import { indexMessages } from '@controllers/MessageController/functions';
 import { RequestError } from '@errors/request';
-import { validateTokenAndGetUser } from '@utils/auth';
 import http from 'http';
 import socket from 'socket.io';
 
+import { validateTokenAndGetUser } from '@utils/auth';
+
 import App from './App';
+
+// Other File
+
+interface LoadChatParamsData {
+  conversationId: string;
+}
+//
 
 class Socket {
   server: http.Server;
@@ -33,6 +42,8 @@ class Socket {
 
       await this.handleValidateConnection(client);
       await this.loadConversations(client);
+
+      client.on('load-chat-request', (data) => this.loadChat(client, data));
 
       // client.emit('test', { ok: true });
     });
@@ -73,11 +84,40 @@ class Socket {
 
   async loadConversations(client: socket.Socket) {
     const { userId } = this.clients[client.id];
-    console.log('akki');
 
     const conversations = await indexConversations({ userId });
 
     client.emit('load-conversations', conversations);
+  }
+
+  async loadChat(client: socket.Socket, data: LoadChatParamsData) {
+    const { userId } = this.clients[client.id];
+    const { conversationId } = data;
+
+    try {
+      const conversation = await showConversation({
+        _id: conversationId,
+      });
+
+      const messages = await indexMessages({
+        userId,
+        conversationId,
+      });
+
+      const chat = {
+        conversation,
+        messages,
+      };
+
+      client.emit('load-chat', chat);
+    } catch (e) {
+      const { message } = e as RequestError;
+      console.error('Error:', message);
+
+      client.emit('error-load-chat', {
+        message,
+      });
+    }
   }
 }
 

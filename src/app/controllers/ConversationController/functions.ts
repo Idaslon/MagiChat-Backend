@@ -2,9 +2,14 @@
 import { User } from '@entity/user';
 import Conversation from '@schemas/Conversation';
 import { getRepository } from 'typeorm';
+import { assertConversationExists } from './assertions';
 
 interface IndexParams {
   userId: number;
+}
+
+interface ShowParams {
+  _id: string;
 }
 
 export async function indexConversations(params: IndexParams) {
@@ -35,4 +40,28 @@ export async function indexConversations(params: IndexParams) {
   }
 
   return conversationsFormatted;
+}
+
+export async function showConversation(params: ShowParams) {
+  const { _id } = params;
+
+  await assertConversationExists({ _id });
+
+  const conversation = await Conversation.findById(_id).select('_id userId toUserId');
+
+  const user = await getRepository(User).findOne({
+    where: { id: conversation?.userId },
+  });
+
+  const toUser = await getRepository(User).findOne({
+    where: { id: conversation?.toUserId },
+  });
+
+  const conversationFormatted = {
+    _id: conversation?._id,
+    user,
+    toUser,
+  };
+
+  return conversationFormatted;
 }

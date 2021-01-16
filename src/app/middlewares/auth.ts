@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { getRepository } from 'typeorm';
 
-import { User } from '@entity/user';
-import { decodeToken, validateTokenAndGetUser } from '@utils/auth';
+import { validateTokenAndGetUser } from '@utils/auth';
 import { RequestError } from '@errors/request';
 
 interface AuthRequest extends Request {
