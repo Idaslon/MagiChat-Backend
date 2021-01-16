@@ -4,6 +4,7 @@ import './bootstrap';
 import './database';
 
 import express, { Express } from 'express';
+import cors from 'cors';
 
 import routes from './routes';
 
@@ -19,6 +20,7 @@ class App {
   }
 
   middlewares() {
+    this.server.use(cors());
     this.server.use(express.json());
   }
 

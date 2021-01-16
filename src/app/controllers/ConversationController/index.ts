@@ -8,7 +8,6 @@ import { RequestError } from '@errors/request';
 import { assertUserExists } from '@controllers/UserController/assertions';
 import { getRepository } from 'typeorm';
 import { User } from '@entity/user';
-import { connection } from 'mongoose';
 import { assertConversationWithUserNotExists } from './assertions';
 
 interface Create {
@@ -71,9 +70,13 @@ class ConversationController {
       messages: [],
     });
 
+    const user = await getRepository(User).findOne({
+      where: { id: conversation.toUserId },
+    });
+
     const conversationFormatted = {
       _id: conversation._id,
-      toUserId: conversation.toUserId,
+      user,
     };
 
     return res.json(conversationFormatted);
