@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { indexConversations, showConversation } from '@controllers/ConversationController/functions';
-import { indexMessages } from '@controllers/MessageController/functions';
+import { createMessage, indexMessages } from '@controllers/MessageController/functions';
 import { RequestError } from '@errors/request';
 import http from 'http';
 import socket from 'socket.io';
@@ -13,6 +13,11 @@ import App from './App';
 
 interface LoadChatParamsData {
   conversationId: string;
+}
+
+interface CreateChatMessageParamsData {
+  conversationId: string;
+  text: string;
 }
 //
 
@@ -44,6 +49,7 @@ class Socket {
       await this.loadConversations(client);
 
       client.on('load-chat-request', (data) => this.loadChat(client, data));
+      client.on('create-chat-message', (data) => this.createChatMessage(client, data));
 
       // client.emit('test', { ok: true });
     });
@@ -72,7 +78,7 @@ class Socket {
       const { message } = e as RequestError;
       console.error('Error:', message);
 
-      client.emit('error-validation', {
+      client.emit('validation-error', {
         message,
       });
 
@@ -114,7 +120,38 @@ class Socket {
       const { message } = e as RequestError;
       console.error('Error:', message);
 
-      client.emit('error-load-chat', {
+      client.emit('load-chat-error', {
+        message,
+      });
+    }
+  }
+
+  async createChatMessage(client: socket.Socket, data: CreateChatMessageParamsData) {
+    const { userId } = this.clients[client.id];
+    const { conversationId, text } = data;
+    console.log('vai criar');
+
+    try {
+      const message = await createMessage({
+        text,
+        userId,
+        conversationId,
+      });
+
+      const messageFormatted = {
+        _id: message._id,
+        text: message.text,
+        date: message.date,
+        senderUserId: message.senderUserId,
+        conversationId,
+      };
+
+      client.emit('load-chat-message', messageFormatted);
+    } catch (e) {
+      const { message } = e as RequestError;
+      console.error('Error:', message);
+
+      client.emit('create-chat-message-error', {
         message,
       });
     }
