@@ -2,13 +2,9 @@
 import { Response } from 'express';
 
 import { RequestAuth, RequestAuthBody } from '@mytypes/requestAuth';
-import Conversation from '@schemas/Conversation';
 
 import { RequestError } from '@errors/request';
-import { assertUserExists } from '@controllers/UserController/assertions';
-import { getRepository } from 'typeorm';
-import { User } from '@entity/user';
-import { assertConversationWithUserNotExists } from './assertions';
+import { createConversation, indexConversations } from './functions';
 
 interface Create {
   toUserEmail: string;
@@ -21,65 +17,26 @@ class ConversationController {
   async index(req: IndexRequest, res: Response) {
     const userId = req.userId as number;
 
-    const conversations = await Conversation.find({
-      $or: [{ userId }, { toUserId: userId }],
-    })
-      .select('_id toUserId')
-      .populate({
-        path: 'messages',
-        select: '_id text date',
-      })
-      .slice('messages', -1);
+    const conversations = await indexConversations({ userId });
 
-    const conversationsFormatted = [];
-
-    for (const conversation of conversations) {
-      const user = await getRepository(User).findOne({
-        where: { id: conversation.toUserId },
-      });
-
-      conversationsFormatted.push({
-        _id: conversation._id,
-        lastMessage: conversation.messages[0],
-        user,
-      });
-    }
-
-    return res.json(conversationsFormatted);
+    return res.json(conversations);
   }
 
   async create(req: CreateRequest, res: Response) {
     const userId = req.userId as number;
     const { toUserEmail } = req.body;
 
-    let toUserId: number;
-
     try {
-      const user = await assertUserExists({ email: toUserEmail });
-      toUserId = user.id;
+      const conversation = await createConversation({
+        userId,
+        toUserEmail,
+      });
 
-      await assertConversationWithUserNotExists(userId, toUserId);
+      return res.json(conversation);
     } catch (e) {
       const { message, statusCode } = e as RequestError;
       return res.status(statusCode).json({ message });
     }
-
-    const conversation = await Conversation.create({
-      userId,
-      toUserId,
-      messages: [],
-    });
-
-    const user = await getRepository(User).findOne({
-      where: { id: conversation.toUserId },
-    });
-
-    const conversationFormatted = {
-      _id: conversation._id,
-      user,
-    };
-
-    return res.json(conversationFormatted);
   }
 }
 

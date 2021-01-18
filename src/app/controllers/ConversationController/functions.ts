@@ -1,8 +1,10 @@
 /* eslint-disable no-await-in-loop */
+import { assertUserExists } from '@controllers/UserController/assertions';
 import { User } from '@entity/user';
+import { RequestError } from '@errors/request';
 import Conversation from '@schemas/Conversation';
 import { getRepository } from 'typeorm';
-import { assertConversationExists } from './assertions';
+import { assertConversationExists, assertConversationWithUserNotExists } from './assertions';
 
 interface IndexParams {
   userId: number;
@@ -10,6 +12,11 @@ interface IndexParams {
 
 interface ShowParams {
   _id: string;
+}
+
+interface CreateParams {
+  userId: number;
+  toUserEmail: string;
 }
 
 export async function indexConversations(params: IndexParams) {
@@ -61,6 +68,26 @@ export async function showConversation(params: ShowParams) {
     _id: conversation?._id,
     user,
     toUser,
+  };
+
+  return conversationFormatted;
+}
+
+export async function createConversation(params: CreateParams) {
+  const { userId, toUserEmail } = params;
+
+  const toUser = await assertUserExists({ email: toUserEmail });
+  await assertConversationWithUserNotExists(userId, toUser.id);
+
+  const conversation = await Conversation.create({
+    userId,
+    toUserId: toUser.id,
+    messages: [],
+  });
+
+  const conversationFormatted = {
+    _id: conversation._id,
+    user: toUser,
   };
 
   return conversationFormatted;
