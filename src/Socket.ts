@@ -191,7 +191,7 @@ class Socket {
         messages,
       };
 
-      client.emit('load-chat', chat);
+      client.emit('load-chat-response', chat);
     } catch (e) {
       const { message } = e as RequestError;
       console.error('Error:', message);
