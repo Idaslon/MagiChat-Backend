@@ -209,7 +209,7 @@ class Socket {
     const { conversationId, text } = data;
 
     try {
-      const message = await createMessage({
+      const { message, conversation } = await createMessage({
         text,
         userId,
         conversationId,
@@ -224,6 +224,15 @@ class Socket {
       };
 
       client.emit('create-chat-message-response', messageFormatted);
+
+      const otherUserId = conversation.userId === userId ? conversation.toUserId : conversation.userId;
+      const otherMessageClient = this.getClientByUserId(otherUserId);
+
+      if (otherMessageClient) {
+        console.log('otherMessageClientConnected');
+
+        otherMessageClient.socket.emit('receive-chat-message-response', messageFormatted);
+      }
     } catch (e) {
       const { message } = e as RequestError;
       console.error('Error:', message);

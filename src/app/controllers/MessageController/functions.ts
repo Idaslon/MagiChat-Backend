@@ -31,7 +31,7 @@ export async function indexMessages(params: IndexMessagesParams) {
 export async function createMessage(params: CreateMessageParams) {
   const { conversationId, userId, text } = params;
 
-  await assertConversationExists({ _id: conversationId });
+  const conversation = await assertConversationExists({ _id: conversationId });
 
   const message = await Message.create({
     text,
@@ -48,5 +48,5 @@ export async function createMessage(params: CreateMessageParams) {
     }
   );
 
-  return message;
+  return { message, conversation };
 }
