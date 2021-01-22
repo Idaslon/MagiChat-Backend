@@ -157,8 +157,6 @@ class Socket {
         toUserClient.socket.emit('create-conversation-response', conversation);
       }
     } catch (e) {
-      console.log('errorrrr');
-
       const { message } = e as RequestError;
       client.emit('create-conversation-error', { message });
     }
@@ -225,7 +223,7 @@ class Socket {
         conversationId,
       };
 
-      client.emit('load-chat-message', messageFormatted);
+      client.emit('create-chat-message-response', messageFormatted);
     } catch (e) {
       const { message } = e as RequestError;
       console.error('Error:', message);
