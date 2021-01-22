@@ -1,7 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { assertUserExists } from '@controllers/UserController/assertions';
 import { User } from '@entity/user';
-import { RequestError } from '@errors/request';
 import Conversation from '@schemas/Conversation';
 import { getRepository } from 'typeorm';
 import { assertConversationExists, assertConversationWithUserNotExists } from './assertions';
@@ -25,7 +24,7 @@ export async function indexConversations(params: IndexParams) {
   const conversations = await Conversation.find({
     $or: [{ userId }, { toUserId: userId }],
   })
-    .select('_id toUserId')
+    .select('_id userId toUserId')
     .populate({
       path: 'messages',
       select: '_id text date',
@@ -36,6 +35,10 @@ export async function indexConversations(params: IndexParams) {
 
   for (const conversation of conversations) {
     const user = await getRepository(User).findOne({
+      where: { id: conversation.userId },
+    });
+
+    const toUser = await getRepository(User).findOne({
       where: { id: conversation.toUserId },
     });
 
@@ -43,6 +46,7 @@ export async function indexConversations(params: IndexParams) {
       _id: conversation._id,
       lastMessage: conversation.messages[0],
       user,
+      toUser,
     });
   }
 
@@ -76,6 +80,7 @@ export async function showConversation(params: ShowParams) {
 export async function createConversation(params: CreateParams) {
   const { userId, toUserEmail } = params;
 
+  const user = await assertUserExists({ id: userId });
   const toUser = await assertUserExists({ email: toUserEmail });
   await assertConversationWithUserNotExists(userId, toUser.id);
 
@@ -87,7 +92,8 @@ export async function createConversation(params: CreateParams) {
 
   const conversationFormatted = {
     _id: conversation._id,
-    user: toUser,
+    user,
+    toUser,
   };
 
   return conversationFormatted;

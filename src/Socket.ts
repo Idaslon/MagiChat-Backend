@@ -73,8 +73,6 @@ class Socket {
   initClientConnection() {
     this.socket.removeAllListeners();
 
-    console.log(this.socket.sockets.sockets.size);
-
     this.socket.on('connection', async (client: socket.Socket) => {
       this.handleDisconnect(client);
 
@@ -91,6 +89,7 @@ class Socket {
 
   handleDisconnect(client: socket.Socket) {
     client.on('disconnect', () => {
+      delete this.clients[client.id];
       console.log('Disconnected', client.id);
     });
   }
@@ -123,7 +122,7 @@ class Socket {
     }
   }
 
-  getClient(userId: number) {
+  getClientByUserId(userId: number) {
     const keys = Object.keys(this.clients);
 
     for (const key of keys) {
@@ -150,7 +149,7 @@ class Socket {
 
       client.emit('create-conversation-response', conversation);
 
-      const toUserClient = this.getClient(conversation.user.id);
+      const toUserClient = this.getClientByUserId(conversation.toUser.id);
 
       if (toUserClient) {
         console.log('toUserClientConnected');
@@ -210,7 +209,6 @@ class Socket {
   async createChatMessage(client: socket.Socket, data: CreateChatMessageParamsData) {
     const { userId } = this.clients[client.id];
     const { conversationId, text } = data;
-    console.log('vai criar');
 
     try {
       const message = await createMessage({
