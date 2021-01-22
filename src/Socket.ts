@@ -154,7 +154,7 @@ class Socket {
       if (toUserClient) {
         console.log('toUserClientConnected');
 
-        toUserClient.socket.emit('create-conversation-response', conversation);
+        toUserClient.socket.emit('receive-conversation-response', conversation);
       }
     } catch (e) {
       const { message } = e as RequestError;
