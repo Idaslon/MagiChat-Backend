@@ -20,7 +20,7 @@ interface Create {
 type IndexRequest = RequestAuthParams<Index>;
 type CreateRequest = RequestAuth<Create, Index>;
 
-class MessageController {
+class MessageRestController {
   async index(req: IndexRequest, res: Response) {
     const userId = req.userId as number;
     const { conversationId } = req.params;
@@ -59,4 +59,4 @@ class MessageController {
   }
 }
 
-export default new MessageController();
+export default new MessageRestController();

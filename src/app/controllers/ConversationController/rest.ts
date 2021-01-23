@@ -13,7 +13,7 @@ interface Create {
 type IndexRequest = RequestAuth;
 type CreateRequest = RequestAuthBody<Create>;
 
-class ConversationController {
+class ConversationRestController {
   async index(req: IndexRequest, res: Response) {
     const userId = req.userId as number;
 
@@ -40,4 +40,4 @@ class ConversationController {
   }
 }
 
-export default new ConversationController();
+export default new ConversationRestController();

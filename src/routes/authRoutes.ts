@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import ConversationController from '@controllers/ConversationController';
+import ConversationRestController from '@controllers/ConversationController/rest';
 import authMiddleware from '@middlewares/auth';
-import MessageController from '@controllers/MessageController';
+import MessageRestController from '@controllers/MessageController/rest';
 
 const authRoutes = Router();
 
@@ -12,10 +12,10 @@ authRoutes.get('/testAuth', async (req, res) => {
   return res.json({ message: 'You are authenticated!' });
 });
 
-authRoutes.get('/conversations', ConversationController.index);
-authRoutes.post('/conversations', ConversationController.create);
+authRoutes.get('/conversations', ConversationRestController.index);
+authRoutes.post('/conversations', ConversationRestController.create);
 
-authRoutes.get('/conversations/:conversationId/messages', MessageController.index);
-authRoutes.post('/conversations/:conversationId/messages', MessageController.create);
+authRoutes.get('/conversations/:conversationId/messages', MessageRestController.index);
+authRoutes.post('/conversations/:conversationId/messages', MessageRestController.create);
 
 export default authRoutes;

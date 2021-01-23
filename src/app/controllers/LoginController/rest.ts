@@ -12,7 +12,7 @@ interface Create {
 
 type CreateRequest = RequestBody<Create>;
 
-class LoginController {
+class LoginRestController {
   async create(req: CreateRequest, res: Response) {
     const { email, password } = req.body;
 
@@ -33,7 +33,7 @@ class LoginController {
   }
 }
 
-export default new LoginController();
+export default new LoginRestController();
 
 // [
 //   userId: [

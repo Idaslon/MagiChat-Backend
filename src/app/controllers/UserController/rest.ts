@@ -12,7 +12,7 @@ interface Create {
 
 type CreateRequest = RequestBody<Create>;
 
-class UserController {
+class UserRestController {
   async index(req: Request, res: Response) {
     const users = await getRepository(User).find();
 
@@ -38,4 +38,4 @@ class UserController {
   }
 }
 
-export default new UserController();
+export default new UserRestController();
