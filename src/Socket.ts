@@ -1,10 +1,6 @@
 /* eslint-disable no-console */
-import {
-  createConversation,
-  indexConversations,
-  showConversation,
-} from '@controllers/ConversationController/functions';
-import { createMessage, indexMessages } from '@controllers/MessageController/functions';
+import { createConversation, indexConversations, showConversation } from '@controllers/Conversation/functions';
+import { createMessage, indexMessages } from '@controllers/Message/functions';
 import { RequestError } from '@errors/request';
 import http from 'http';
 import socket from 'socket.io';

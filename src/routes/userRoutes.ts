@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import UserRestController from '@controllers/UserController/rest';
-import LoginRestController from '@controllers/LoginController/rest';
+import UserRestController from '@controllers/User/rest';
+import LoginRestController from '@controllers/Login/rest';
 
 const userRoutes = Router();
 

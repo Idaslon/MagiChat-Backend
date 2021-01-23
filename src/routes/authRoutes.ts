@@ -1,8 +1,9 @@
 import { Router } from 'express';
 
-import ConversationRestController from '@controllers/ConversationController/rest';
+import ConversationRestController from '@controllers/Conversation/rest';
+import MessageRestController from '@controllers/Message/rest';
+
 import authMiddleware from '@middlewares/auth';
-import MessageRestController from '@controllers/MessageController/rest';
 
 const authRoutes = Router();
 

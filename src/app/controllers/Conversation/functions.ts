@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { assertUserExists } from '@controllers/UserController/assertions';
+import { assertUserExists } from '@controllers/User/assertions';
 import { User } from '@entity/user';
 import Conversation from '@schemas/Conversation';
 import { getRepository } from 'typeorm';

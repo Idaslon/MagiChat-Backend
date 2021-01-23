@@ -1,12 +1,8 @@
 import { Response } from 'express';
 
-import { assertConversationExists, assertUserOnConversation } from '@controllers/ConversationController/assertions';
 import { RequestAuth, RequestAuthParams } from '@mytypes/requestAuth';
 import { RequestError } from '@errors/request';
 
-import Conversation from '@schemas/Conversation';
-import Message from '@schemas/Message';
-import { assertUserExists } from '@controllers/UserController/assertions';
 import { createMessage, indexMessages } from './functions';
 
 type Index = {

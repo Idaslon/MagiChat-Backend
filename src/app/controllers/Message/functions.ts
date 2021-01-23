@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop */
-import { assertConversationExists, assertUserOnConversation } from '@controllers/ConversationController/assertions';
+import { assertConversationExists, assertUserOnConversation } from '@controllers/Conversation/assertions';
 import Conversation from '@schemas/Conversation';
 import Message from '@schemas/Message';
 

@@ -34,15 +34,3 @@ class LoginRestController {
 }
 
 export default new LoginRestController();
-
-// [
-//   userId: [
-//     toUserId: [
-//       {
-//         id,
-//         message,
-//         date,
-//       }
-//     ]
-//   ]
-// ]
