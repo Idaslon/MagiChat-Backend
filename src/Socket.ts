@@ -39,6 +39,12 @@ interface Clients {
   [key: string]: Client;
 }
 
+interface NotifyClientParams {
+  userId: number;
+  channel: string;
+  data: any;
+}
+
 // const channes = {
 //   conversation: {
 //     create: {
@@ -95,8 +101,6 @@ class Socket {
   }
 
   async handleValidateConnection(client: socket.Socket) {
-    console.log('akis');
-
     try {
       const query = client.handshake.query as { token?: string };
 
@@ -137,6 +141,16 @@ class Socket {
   }
   // other file
 
+  notifyClientIfConneted(params: NotifyClientParams) {
+    const { userId, channel, data } = params;
+
+    const client = this.getClientByUserId(userId);
+
+    if (client) {
+      client.socket.emit(channel, data);
+    }
+  }
+
   async createConversation(client: socket.Socket, data: CreateConversationData) {
     const { userId } = this.clients[client.id];
     const { toUserEmail } = data;
@@ -149,13 +163,11 @@ class Socket {
 
       client.emit('create-conversation-response', conversation);
 
-      const toUserClient = this.getClientByUserId(conversation.toUser.id);
-
-      if (toUserClient) {
-        console.log('toUserClientConnected');
-
-        toUserClient.socket.emit('receive-conversation-response', conversation);
-      }
+      this.notifyClientIfConneted({
+        userId: conversation.toUser.id,
+        channel: 'receive-conversation-response',
+        data: conversation,
+      });
     } catch (e) {
       const { message } = e as RequestError;
       client.emit('create-conversation-error', { message });
@@ -226,13 +238,12 @@ class Socket {
       client.emit('create-chat-message-response', messageFormatted);
 
       const otherUserId = conversation.userId === userId ? conversation.toUserId : conversation.userId;
-      const otherMessageClient = this.getClientByUserId(otherUserId);
 
-      if (otherMessageClient) {
-        console.log('otherMessageClientConnected');
-
-        otherMessageClient.socket.emit('receive-chat-message-response', messageFormatted);
-      }
+      this.notifyClientIfConneted({
+        userId: otherUserId,
+        channel: 'receive-chat-message-response',
+        data: messageFormatted,
+      });
     } catch (e) {
       const { message } = e as RequestError;
       console.error('Error:', message);
