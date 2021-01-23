@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
-import { createConversation, indexConversations, showConversation } from '@controllers/Conversation/functions';
-import { createMessage, indexMessages } from '@controllers/Message/functions';
 import { RequestError } from '@errors/request';
 import http from 'http';
 import socket from 'socket.io';
+
+import ConversationSocketController from '@controllers/Conversation/socket';
+import MessageSocketController from '@controllers/Message/socket';
 
 import { validateTokenAndGetUser } from '@utils/auth';
 
@@ -78,14 +79,18 @@ class Socket {
     this.socket.on('connection', async (client: socket.Socket) => {
       this.handleDisconnect(client);
 
-      await this.handleValidateConnection(client);
-      await this.loadConversations(client);
+      const clientData = await this.handleValidateConnection(client);
 
-      client.on('create-conversation-request', (data) => this.createConversation(client, data));
-      client.on('load-chat-request', (data) => this.loadChat(client, data));
-      client.on('create-chat-message', (data) => this.createChatMessage(client, data));
+      if (!clientData) {
+        return;
+      }
 
-      // client.emit('test', { ok: true });
+      const { userId } = clientData;
+      await ConversationSocketController.load(client, userId);
+
+      client.on('create-conversation-request', (data) => this.createConversation(client, userId, data));
+      client.on('load-chat-request', (data) => MessageSocketController.load(client, userId, data));
+      client.on('create-chat-message', (data) => this.createChatMessage(client, userId, data));
     });
   }
 
@@ -105,11 +110,15 @@ class Socket {
 
       console.log('user', user);
 
-      // [to-do] need to check?
-      this.clients[client.id] = {
+      const newClient = {
         userId: user.id,
         socket: client,
       };
+
+      // [to-do] need to check?
+      this.clients[client.id] = newClient;
+
+      return newClient;
     } catch (e) {
       const { message } = e as RequestError;
       console.error('Error:', message);
@@ -119,6 +128,8 @@ class Socket {
       });
 
       client.disconnect();
+
+      return undefined;
     }
   }
 
@@ -147,105 +158,35 @@ class Socket {
     }
   }
 
-  async createConversation(client: socket.Socket, data: CreateConversationData) {
-    const { userId } = this.clients[client.id];
-    const { toUserEmail } = data;
+  async createConversation(client: socket.Socket, userId: number, data: CreateConversationData) {
+    const conversation = await ConversationSocketController.create(client, userId, data);
 
-    try {
-      const conversation = await createConversation({
-        userId,
-        toUserEmail,
-      });
-
-      client.emit('create-conversation-response', conversation);
-
-      this.notifyClientIfConneted({
-        userId: conversation.toUser.id,
-        channel: 'receive-conversation-response',
-        data: conversation,
-      });
-    } catch (e) {
-      const { message } = e as RequestError;
-      client.emit('create-conversation-error', { message });
+    if (!conversation) {
+      return;
     }
+
+    this.notifyClientIfConneted({
+      userId: conversation.toUser.id,
+      channel: 'receive-conversation-response',
+      data: conversation,
+    });
   }
 
-  async loadConversations(client: socket.Socket) {
-    const { userId } = this.clients[client.id];
+  async createChatMessage(client: socket.Socket, userId: number, data: CreateChatMessageParamsData) {
+    const messageData = await MessageSocketController.create(client, userId, data);
 
-    const conversations = await indexConversations({ userId });
-
-    client.emit('load-conversations', conversations);
-  }
-
-  //
-
-  async loadChat(client: socket.Socket, data: LoadChatParamsData) {
-    const { userId } = this.clients[client.id];
-    const { conversationId } = data;
-
-    try {
-      const conversation = await showConversation({
-        _id: conversationId,
-      });
-
-      const messages = await indexMessages({
-        userId,
-        conversationId,
-      });
-
-      const chat = {
-        conversation,
-        messages,
-      };
-
-      client.emit('load-chat-response', chat);
-    } catch (e) {
-      const { message } = e as RequestError;
-      console.error('Error:', message);
-
-      client.emit('load-chat-error', {
-        message,
-      });
+    if (!messageData) {
+      return;
     }
-  }
 
-  //
+    const { conversation, messageFormatted } = messageData;
+    const otherUserId = conversation.userId === userId ? conversation.toUserId : conversation.userId;
 
-  async createChatMessage(client: socket.Socket, data: CreateChatMessageParamsData) {
-    const { userId } = this.clients[client.id];
-    const { conversationId, text } = data;
-
-    try {
-      const { message, conversation } = await createMessage({
-        text,
-        userId,
-        conversationId,
-      });
-
-      const messageFormatted = {
-        _id: message._id,
-        text: message.text,
-        date: message.date,
-        senderUserId: message.senderUserId,
-        conversationId,
-      };
-
-      client.emit('create-chat-message-response', messageFormatted);
-
-      const otherUserId = conversation.userId === userId ? conversation.toUserId : conversation.userId;
-
-      this.notifyClientIfConneted({
-        userId: otherUserId,
-        channel: 'receive-chat-message-response',
-        data: messageFormatted,
-      });
-    } catch (e) {
-      const { message } = e as RequestError;
-      console.error('Error:', message);
-
-      client.emit('create-chat-message-error', { message });
-    }
+    this.notifyClientIfConneted({
+      userId: otherUserId,
+      channel: 'receive-chat-message-response',
+      data: messageFormatted,
+    });
   }
 }
 
