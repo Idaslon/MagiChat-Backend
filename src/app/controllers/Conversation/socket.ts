@@ -3,7 +3,7 @@ import { Socket } from 'socket.io';
 import { RequestError } from '@errors/request';
 import { createConversation, indexConversations } from './functions';
 
-interface CreateConversationData {
+export interface CreateConversationData {
   toUserEmail: string;
 }
 

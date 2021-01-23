@@ -1,31 +1,14 @@
 /* eslint-disable no-console */
-import { RequestError } from '@errors/request';
 import http from 'http';
 import socket from 'socket.io';
 
-import ConversationSocketController from '@controllers/Conversation/socket';
-import MessageSocketController from '@controllers/Message/socket';
+import ConversationSocketController, { CreateConversationData } from '@controllers/Conversation/socket';
+import MessageSocketController, { CreateChatMessageParamsData } from '@controllers/Message/socket';
 
+import { RequestError } from '@errors/request';
 import { validateTokenAndGetUser } from '@utils/auth';
 
 import App from './App';
-
-// Other File
-
-interface CreateConversationData {
-  toUserEmail: string;
-}
-
-interface LoadChatParamsData {
-  conversationId: string;
-}
-
-interface CreateChatMessageParamsData {
-  conversationId: string;
-  text: string;
-}
-
-//
 
 interface Client {
   userId: number;
@@ -41,21 +24,6 @@ interface NotifyClientParams {
   channel: string;
   data: any;
 }
-
-// const channes = {
-//   conversation: {
-//     create: {
-//       request: 'conversation-create-request',
-//       response: 'conversation-create-response',
-//       error: 'conversation-create-error',
-//     },
-//     load: {
-//       request: 'conversation-load-request',
-//       response: 'conversation-load-response',
-//       error: 'conversation-load-error',
-//     },
-//   },
-// };
 
 class Socket {
   server: http.Server;
@@ -89,6 +57,7 @@ class Socket {
       await ConversationSocketController.load(client, userId);
 
       client.on('create-conversation-request', (data) => this.createConversation(client, userId, data));
+
       client.on('load-chat-request', (data) => MessageSocketController.load(client, userId, data));
       client.on('create-chat-message', (data) => this.createChatMessage(client, userId, data));
     });
@@ -146,7 +115,6 @@ class Socket {
 
     return undefined;
   }
-  // other file
 
   notifyClientIfConneted(params: NotifyClientParams) {
     const { userId, channel, data } = params;
@@ -157,6 +125,8 @@ class Socket {
       client.socket.emit(channel, data);
     }
   }
+
+  // other file
 
   async createConversation(client: socket.Socket, userId: number, data: CreateConversationData) {
     const conversation = await ConversationSocketController.create(client, userId, data);

@@ -7,7 +7,7 @@ interface LoadChatParamsData {
   conversationId: string;
 }
 
-interface CreateChatMessageParamsData {
+export interface CreateChatMessageParamsData {
   conversationId: string;
   text: string;
 }
